@@ -1,0 +1,215 @@
+﻿@page "/NewClaim"
+@rendermode InteractiveServer
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Components.Forms
+@inject NavigationManager Navigator
+
+<PageTitle>New Claim</PageTitle>
+
+
+<h3>NewClaim</h3>
+
+
+<EditForm Model="@formData" FormName="newclaimform" OnValidSubmit="HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="mb-3">
+        <label for="insuredUser" class="form-label">Insured</label>
+        <p>@username</p>
+        <label for="vinCar" class="form-label">VIN</label>
+        <p>@vin</p>
+        <label for="policyNumber" class="form-label">PolicyNumber</label>
+        <p>@policyNumber</p>
+        <label for="streetAddress" class="form-label">Address</label>
+        <p>@streetAddress</p>
+        <label for="city" class="form-label">City</label>
+        <p>@city</p>
+        <label for="state" class="form-label">State</label>
+        <p>@state</p>
+        <label for="zipCode" class="form-label">ZipCode</label>
+        <p>@zipCode</p>
+        <label for="policyType" class="form-label">PolicyType</label>
+        <p>@policyType</p>
+
+
+
+        <label for="phoneNumber" class="form-label">Phone Number:</label>
+        <InputText id="phoneNumber" class="form-control" @bind-Value="@formData.phone" />
+        <label for="descriptInput" class="form-label">Description:</label>
+        <InputText id="descriptInput" class="form-control" @bind-Value="@formData.Description" />
+        <label for="policeId" class="form-label">Police Officer ID:</label>
+        <InputText id="policeId" class="form-control" @bind-Value="@formData.policeId" />
+
+        <label for="peopleHurt" class="form-label">People Hurt</label>
+      
+        <InputRadioGroup @bind-Value="formData.peopleHurt">
+            <InputRadio Value=true /> Yes<br />
+            <InputRadio Value=false /> No<br />
+        </InputRadioGroup>
+
+        <label for="vehicleDamage" class="form-label">Vehicle Damage</label>
+        <InputRadioGroup @bind-Value="formData.vehicleDamage">
+            <InputRadio Value=true /> Yes<br />
+            <InputRadio Value=false /> No<br />
+        </InputRadioGroup>
+
+        <label for="lawSuit" class="form-label">Lawsuit</label>
+        <InputRadioGroup @bind-Value="formData.lawSuit">
+            <InputRadio Value=true /> Yes<br />
+            <InputRadio Value=false /> No<br />
+        </InputRadioGroup>
+
+        <table class="table">
+         <thead>
+            <tr>
+                <th>Select</th>
+                <th>Id</th>
+                <th>Year</th>
+                <th>Make</th>
+                <th>Model</th>
+                <th>Vin</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var vehicle in vehicles)
+
+                {
+                    <tr>
+                        <td>
+                            <InputCheckbox @bind-Value="vehicle.isSelected" />
+                        </td>
+                        <td>@vehicle.Id</td>
+                        <td>@vehicle.Year</td>
+                        <td>@vehicle.Make</td>
+                        <td>@vehicle.Model</td>
+                        <td>@vehicle.Vin</td>
+                    </tr>
+                }
+        </tbody>
+        </table>
+
+
+        <InputDate @bind-Value="formData.SelectedDate" />
+        <p>Selected Date: @formData.SelectedDate.ToShortDateString()</p>
+
+        <InputFile OnChange="HandleSelectedFile" multiple accept="image/*" />
+
+
+    </div>
+
+
+    <button type="submit" class="btn btn-primary">Submit</button>
+</EditForm>
+
+
+
+@code {
+
+    private FormModel formData = new FormModel();
+    private List<string> ids = new();
+    private string? username;
+    private string? vin;
+    private string? policyNumber;
+    private string? streetAddress;
+    private string? city;
+    private string? state;
+    private string? zipCode;
+    private string? policyType;
+    private List<IBrowserFile> uploadFiles = new();
+
+    private List<VehicleInfo> vehicles = new()
+    {
+        new VehicleInfo { Id = 1, Make = "Ford", Model = "F150", Year = "2025", Vin = "123456"},
+        new VehicleInfo { Id = 2, Make = "Ferrari", Model = "F80", Year = "2025", Vin = "2468"},
+        new VehicleInfo { Id = 3, Make = "Toyota", Model = "Prius", Year = "2025", Vin = "13579"}
+
+    };
+
+    protected override void OnInitialized()
+    {
+        var uri = Navigator.ToAbsoluteUri(Navigator.Uri);
+        var queryParams = System.Web.HttpUtility.ParseQueryString(uri.Query);
+
+        username = queryParams["username"];
+        vin = queryParams["vin"];
+        policyNumber = queryParams["policyNumber"];
+        streetAddress = queryParams["streetAddress"];
+        city = queryParams["city"];
+        state = queryParams["state"];
+        zipCode = queryParams["zipCode"];
+        policyType = queryParams["policyType"];
+    }
+
+
+
+    private void HandleValidSubmit()
+    {
+        // Do something with formData.Name
+        Console.WriteLine($"Insured: {username}");
+        Console.WriteLine($"Policy Type: {policyType}");
+        Console.WriteLine($"VIN: {vin}");
+        Console.WriteLine($"Policy Nyumber: {policyNumber}");
+        Console.WriteLine($"Address: {streetAddress}, {city}, {state}, {zipCode}");
+        Console.WriteLine($"Description: {formData.Description}");
+        Console.WriteLine($"Police ID: {formData.policeId}");
+        Console.WriteLine($"People Hurt: {formData.peopleHurt}");
+        Console.WriteLine($"Vehicle Damage: {formData.vehicleDamage}");
+        Console.WriteLine($"Lawsuit: {formData.lawSuit}");
+        Console.WriteLine($"Date of Accident: {formData.SelectedDate}");
+
+        foreach (var vehicle in vehicles)
+        {
+            if (vehicle.isSelected)
+             Console.WriteLine($"Vehicle Selected: {vehicle.Make} {vehicle.Model} {vehicle.Year} {vehicle.Vin}");
+        }
+
+        Navigator.NavigateTo("/success");
+    }
+
+    private void HandleSelectedFile(InputFileChangeEventArgs e)
+    {
+        uploadFiles.Clear();
+        foreach (var file in e.GetMultipleFiles())
+        {
+            uploadFiles.Add(file);
+        }
+
+    }
+
+    public class FormModel()
+    {
+        [Required(ErrorMessage = "Phone Number is required")]
+        [StringLength(10, MinimumLength = 10, ErrorMessage = "Phone Number is required")]
+        public string phone { get; set; }
+
+        [Required(ErrorMessage = "Description is required")]
+        [StringLength(20, MinimumLength = 2, ErrorMessage = "Description is required")]
+        public string Description { get; set; }
+
+
+        [Required(ErrorMessage = "Police Id is required")]
+        [StringLength(20, MinimumLength = 2, ErrorMessage = "Police Id is required")]
+        public string policeId { get; set; }
+
+        public bool peopleHurt { get; set; }
+
+        public bool vehicleDamage { get; set; }
+
+        public bool lawSuit { get; set; }
+        public DateTime SelectedDate { get; set; } = DateTime.Today;
+    }
+
+    public class VehicleInfo()
+    {
+        public string Make { get; set; }
+        public string Model { get; set; }
+        public string Year { get; set; }
+        public string Vin { get; set; }
+        public int Id { get; set; }
+        public bool isSelected { get; set; } = false;
+    }
+
+
+
+}
